@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handy-Steuerung Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background-color: #313244;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 360px;
+        }
+        h2 {
+            margin-top: 0;
+            color: #89b4fa;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #45475a;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: #a6e3a1;
+            color: #11111b;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #94e2d5;
+        }
+        button.alarm-btn {
+            background-color: #f38ba8;
+            color: #11111b;
+        }
+        button.alarm-btn:hover {
+            background-color: #eba0ac;
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 13px;
+            text-align: center;
+            min-height: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Handy Control Center</h2>
+    
+    <label for="kanal">Kanal-Name:</label>
+    <input type="text" id="kanal" value="mein_test_kanal_123">
+
+    <label for="nachricht">Text / Nachricht:</label>
+    <input type="text" id="nachricht" placeholder="Sende eine kurze Info...">
+
+    <button onclick="sendeText()">Text an Handy senden</button>
+
+    <label for="datei">Datei anhängen:</label>
+    <input type="file" id="datei">
+    <button onclick="sendeDatei()">Datei an Handy senden</button>
+
+    <hr style="border-color: #45475a; margin-top: 20px;">
+
+    <button class="alarm-btn" onclick="sendeAlarm()">⚠️ Test-Alarm (mit Emoji & Link) auslösen</button>
+
+    <div id="status"></div>
+</div>
+
+<script>
+// 1. Normalen Text senden
+async function sendeText() {
+    const kanal = document.getElementById('kanal').value.trim();
+    const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
+    const statusDiv = document.getElementById('status');
+
+    statusDiv.style.color = '#f9e2af';
+    statusDiv.innerText = 'Sende Text...';
+
+    try {
+        const response = await fetch(`https://ntfy.sh/${kanal}`, {
+            method: 'POST',
+            body: text,
+            headers: { 'Title': 'Dashboard Info' }
+        });
+
+        if (response.ok) {
+            statusDiv.style.color = '#a6e3a1';
+            statusDiv.innerText = 'Text erfolgreich gesendet!';
+        } else { throw new Error(); }
+    } catch (e) {
+        statusDiv.style.color = '#f38ba8';
+        statusDiv.innerText = 'Fehler beim Senden!';
+    }
+}
+
+// 2. Datei senden
+async function sendeDatei() {
+    const kanal = document.getElementById('kanal').value.trim();
+    const dateiInput = document.getElementById('datei');
+    const statusDiv = document.getElementById('status');
+
+    if (dateiInput.files.length === 0) {
+        alert('Bitte wähle zuerst eine Datei aus!');
+        return;
+    }
+
+    const file = dateiInput.files[0];
+    statusDiv.style.color = '#f9e2af';
+    statusDiv.innerText = `Lade "${file.name}" hoch...`;
+
+    try {
+        const response = await fetch(`https://ntfy.sh/${kanal}`, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Filename': file.name,
+                'Title': 'Datei-Uebertragung'
+            }
+        });
+
+        if (response.ok) {
+            statusDiv.style.color = '#a6e3a1';
+            statusDiv.innerText = 'Datei erfolgreich gesendet!';
+        } else { throw new Error(); }
+    } catch (e) {
+        statusDiv.style.color = '#f38ba8';
+        statusDiv.innerText = 'Fehler beim Datei-Upload!';
+    }
+}
+
+// 3. Dringenden Alarm mit Button senden
+async function sendeAlarm() {
+    const kanal = document.getElementById('kanal').value.trim();
+    const statusDiv = document.getElementById('status');
+
+    statusDiv.style.color = '#f9e2af';
+    statusDiv.innerText = 'Sende Alarm...';
+
+    try {
+        const response = await fetch(`https://ntfy.sh/${kanal}`, {
+            method: 'POST',
+            body: 'Achtung! Das ist ein hoher Alarm-Test von deinem Dashboard.',
+            headers: {
+                'Title': '🚨 System Alarm!',
+                'Priority': 'high',
+                'Tags': 'warning,fire',
+                'Actions': 'view, Google öffnen, https://google.com'
+            }
+        });
+
+        if (response.ok) {
+            statusDiv.style.color = '#a6e3a1';
+            statusDiv.innerText = 'Alarm erfolgreich ausgelöst!';
+        } else { throw new Error(); }
+    } catch (e) {
+        statusDiv.style.color = '#f38ba8';
+        statusDiv.innerText = 'Fehler beim Alarm-Senden!';
+    }
+}
+</script>
+
+</body>
+</html>
