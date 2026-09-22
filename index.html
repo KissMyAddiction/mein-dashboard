@@ -33,7 +33,7 @@
             color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
             margin: 0;
             padding: 20px;
@@ -46,15 +46,15 @@
             display: flex;
             gap: 20px;
             width: 100%;
-            max-width: 880px;
-            flex-wrap: wrap;
+            max-width: 900px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 28px;
+            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
             width: 100%;
@@ -175,6 +175,7 @@
             color: var(--accent-success);
             margin-top: 10px;
             border: 1px solid var(--card-border);
+            letter-spacing: 2px;
         }
 
         .timer-status {
@@ -250,17 +251,17 @@
 
             <!-- EINSTELLUNGS-PANEL -->
             <div id="settingsPanel" class="settings-panel">
-                <div class="section-title" style="margin-bottom: 8px;">Timer anpassen</div>
-                <label>Arbeitsbeginn Mo-Do:</label>
+                <div class="section-title" style="margin-bottom: 8px;">Zeiten anpassen</div>
+                <label>Arbeitsbeginn (Mo-Do):</label>
                 <input type="time" id="cfgStart" value="07:30">
                 
-                <label>Feierabend Mo-Do:</label>
+                <label>Feierabend (Mo-Do):</label>
                 <input type="time" id="cfgEnd" value="16:00">
 
-                <label>Feierabend Freitag:</label>
+                <label>Feierabend (Freitag):</label>
                 <input type="time" id="cfgFreitagEnd" value="12:30">
 
-                <button onclick="saveSettings()" style="margin-top: 14px;">Speichern & Übernehmen</button>
+                <button onclick="saveSettings()" style="margin-top: 14px;">Speichern</button>
             </div>
         </div>
 
@@ -275,8 +276,7 @@
                 • 11:55 - 12:30: Mittagspause (35 Min)<br>
                 • 12:30 - 14:40: Arbeit<br>
                 • 14:40 - 14:50: AU (10 Min)<br>
-                • 14:50 - 15:30: Arbeit<br>
-                • 15:30 - 16:00: Aufräumen (30 Min)
+                • 14:50 - 16:00: Arbeit inkl. Aufräumen (30 Min)
             </div>
         </div>
     </div>
@@ -338,7 +338,6 @@
 <script>
 const REQUIRED_PIN = "1919";
 
-// --- TIMER LOGIK ---
 let customSettings = {
     start: "07:30",
     end: "16:00",
@@ -364,7 +363,7 @@ function timeToMinutes(timeStr) {
 
 function updateTimer() {
     const now = new Date();
-    const day = now.getDay(); // 0 = Sonntag, 1 = Montag, ..., 5 = Freitag
+    const day = now.getDay(); 
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const currentSeconds = now.getSeconds();
     const totalCurrentSec = currentMinutes * 60 + currentSeconds;
@@ -372,53 +371,34 @@ function updateTimer() {
     const phaseNameEl = document.getElementById('currentPhaseName');
     const countdownEl = document.getElementById('timerCountdown');
 
-    // Wochenende
     if (day === 0 || day === 6) {
         phaseNameEl.innerText = "Wochenende 🌴";
-        countdownEl.innerText = "Feierabend";
+        countdownEl.innerText = "00:00:00";
         return;
     }
 
     const isFreitag = (day === 5);
-
-    // Zeitblöcke definieren (in Minuten ab Mitternacht)
-    // Mo-Do: 
-    // 07:30 - 08:55 (Arbeit 1)
-    // 08:55 - 09:30 (Frühstück, 35 Min)
-    // 09:30 - 11:00 (Arbeit 2)
-    // 11:00 - 11:10 (AU, 10 Min)
-    // 11:10 - 11:55 (Arbeit 3)
-    // 11:55 - 12:30 (Mittag, 35 Min)
-    // 12:30 - 14:40 (Arbeit 4)
-    // 14:40 - 14:50 (AU, 10 Min)
-    // 14:50 - 15:30 (Arbeit 5)
-    // 15:30 - 16:00 (Aufräumen, 30 Min)
-
     let schedule = [];
+
     if (!isFreitag) {
         schedule = [
-            { name: "Arbeit (1. Block)", start: "07:30", end: "08:55", type: "work" },
-            { name: "Frühstückspause", start: "08:55", end: "09:30", type: "break" },
-            { name: "Arbeit (2. Block)", start: "09:30", end: "11:00", type: "work" },
-            { name: "AU (Kleine Pause)", start: "11:00", end: "11:10", type: "break" },
-            { name: "Arbeit (3. Block)", start: "11:10", end: "11:55", type: "work" },
-            { name: "Mittagspause", start: "11:55", end: "12:30", type: "break" },
-            { name: "Arbeit (4. Block)", start: "12:30", end: "14:40", type: "work" },
-            { name: "AU (Kleine Pause)", start: "14:40", end: "14:50", type: "break" },
-            { name: "Arbeit (5. Block)", start: "14:50", end: "15:30", type: "work" },
-            { name: "Aufräumen", start: "15:30", end: "16:00", type: "cleanup" }
+            { name: "Arbeit (1. Block)", start: "07:30", end: "08:55" },
+            { name: "Frühstückspause", start: "08:55", end: "09:30" },
+            { name: "Arbeit (2. Block)", start: "09:30", end: "11:00" },
+            { name: "AU (Kleine Pause)", start: "11:00", end: "11:10" },
+            { name: "Arbeit (3. Block)", start: "11:10", end: "11:55" },
+            { name: "Mittagspause", start: "11:55", end: "12:30" },
+            { name: "Arbeit (4. Block)", start: "12:30", end: "14:40" },
+            { name: "AU (Kleine Pause)", start: "14:40", end: "14:50" },
+            { name: "Arbeit / Aufräumen", start: "14:50", end: "16:00" }
         ];
     } else {
-        // Freitag: Durchgehend bis 12:30 Uhr ohne große Mittagspause
         schedule = [
-            { name: "Freitags-Arbeit", start: "07:30", end: "12:00", type: "work" },
-            { name: "Freitags-Aufräumen", start: "12:00", end: "12:30", type: "cleanup" }
+            { name: "Freitags-Schicht", start: "07:30", end: "12:30" }
         ];
     }
 
     let activePhase = null;
-    let nextPhase = null;
-
     for (let i = 0; i < schedule.length; i++) {
         let sM = timeToMinutes(schedule[i].start);
         let eM = timeToMinutes(schedule[i].end);
@@ -458,8 +438,6 @@ function formatSeconds(totalSec) {
 setInterval(updateTimer, 1000);
 updateTimer();
 
-
-// --- CONTROL CENTER LOGIK ---
 function showStatus(text, type = 'info') {
     const statusDiv = document.getElementById('status');
     statusDiv.style.display = 'block';
