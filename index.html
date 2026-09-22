@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Control & Transfer Center</title>
+    <title>Control Center & File Transfer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,7 +19,6 @@
             --accent-success: #10b981;
             --accent-warning: #f59e0b;
             --accent-danger: #ef4444;
-            --accent-danger-hover: #dc2626;
             --input-bg: #0f172a;
         }
 
@@ -77,9 +76,6 @@
             letter-spacing: 0.05em;
             color: var(--text-muted);
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         label {
@@ -107,22 +103,6 @@
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
-        input[type="file"]::file-selector-button {
-            background: var(--card-border);
-            color: var(--text-main);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-right: 10px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        input[type="file"]::file-selector-button:hover {
-            background: #475569;
-        }
-
         button {
             width: 100%;
             padding: 11px;
@@ -143,10 +123,6 @@
         button:hover {
             background-color: var(--accent-primary-hover);
             transform: translateY(-1px);
-        }
-
-        button:active {
-            transform: translateY(0);
         }
 
         button.alarm-btn {
@@ -184,7 +160,6 @@
             display: none;
         }
 
-        /* Spinner Animation */
         .spinner {
             width: 16px;
             height: 16px;
@@ -205,11 +180,10 @@
 <div class="card">
     <h2>Control Center</h2>
 
-    <!-- BEREICH 1: DATEI-AUSTAUSCH (P2P MIT CODE) -->
+    <!-- BEREICH 1: DATEI-AUSTAUSCH -->
     <div class="section">
         <div class="section-title">📦 Datei-Austausch (4-Stelliger Code)</div>
         
-        <!-- Upload -->
         <label for="dateiCode">Datei freigeben:</label>
         <input type="file" id="dateiCode">
         <button onclick="uploadFuerCode()">Code generieren & hochladen</button>
@@ -221,13 +195,12 @@
 
         <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 18px 0 10px 0;">
 
-        <!-- Download -->
         <label for="downloadCode">Datei abholen:</label>
         <input type="text" id="downloadCode" placeholder="Z. B. A3K9" maxlength="4" style="text-transform: uppercase; text-align: center; font-size: 16px; letter-spacing: 3px; font-weight: 600;">
         <button onclick="downloadMitCode()">Datei herunterladen</button>
     </div>
 
-    <!-- BEREICH 2: DIRECT HANDY SENDER -->
+    <!-- BEREICH 2: HANDY SENDER -->
     <div class="section">
         <div class="section-title">📱 Handy-Direktversand</div>
         
@@ -249,7 +222,6 @@
 </div>
 
 <script>
-// Hilfsfunktion: Statusmeldung anzeigen
 function showStatus(text, type = 'info') {
     const statusDiv = document.getElementById('status');
     statusDiv.style.display = 'block';
@@ -269,7 +241,6 @@ function showStatus(text, type = 'info') {
     }
 }
 
-// Generiert exakt 4 Zeichen
 function generate4DigitCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let result = '';
@@ -279,7 +250,7 @@ function generate4DigitCode() {
     return result;
 }
 
-// 1. Datei hochladen & Code erstellen
+// 1. Upload für Code-Transfer
 async function uploadFuerCode() {
     const dateiInput = document.getElementById('dateiCode');
     const codeArea = document.getElementById('codeArea');
@@ -316,7 +287,7 @@ async function uploadFuerCode() {
     }
 }
 
-// 2. Datei mit Code herunterladen (OHNE neues Fenster / Hängenbleiben)
+// 2. Download ohne Dauerschleife
 async function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
 
@@ -326,40 +297,50 @@ async function downloadMitCode() {
     }
 
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
-    showStatus('Suche Datei und starte Download...', 'loading');
+    showStatus('Suche Datei...', 'loading');
 
     try {
-        // Holen der Nachrichtendaten inkl. Header/Attribute
-        const response = await fetch(`https://ntfy.sh/${transferChannel}/raw`);
+        // Fragt die gepufferten Nachrichten per JSON-API ab (kein Stream!)
+        const response = await fetch(`https://ntfy.sh/${transferChannel}/json?poll=1`);
+        
+        if (!response.ok) throw new Error();
 
-        if (!response.ok) {
-            throw new Error('Datei nicht gefunden');
+        const textData = await response.text();
+        // Spaltet die NDJSON-Zeilen auf und sucht die letzte Nachricht mit Datei
+        const lines = textData.trim().split('\n').filter(Boolean);
+        let fileUrl = null;
+        let fileName = `download_${code4}`;
+
+        for (let i = lines.length - 1; i >= 0; i--) {
+            const item = JSON.parse(lines[i]);
+            if (item.attachment && item.attachment.url) {
+                fileUrl = item.attachment.url;
+                if (item.attachment.name) {
+                    fileName = item.attachment.name;
+                }
+                break;
+            }
         }
 
-        // Als Binärdaten laden
-        const blob = await response.blob();
-
-        if (blob.size === 0) {
+        if (!fileUrl) {
             showStatus('Keine Datei unter diesem Code gefunden.', 'error');
             return;
         }
 
-        // Versuchen, den originalen Dateinamen auszulesen (falls vorhanden)
-        let filename = `download_${code4}`;
-        const disposition = response.headers.get('Content-Disposition');
-        if (disposition && disposition.includes('filename=')) {
-            filename = disposition.split('filename=')[1].replace(/"/g, '');
-        }
+        // Lade die echte Datei herunter
+        showStatus('Starte Download...', 'loading');
+        const fileResponse = await fetch(fileUrl);
+        const blob = await fileResponse.blob();
 
-        // Direkten Download auslösen (im selben Fenster)
-        const downloadUrl = window.URL.createObjectURL(blob);
+        // Download im selben Tab über Blob-URL auslösen
+        const blobUrl = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = filename;
+        a.href = blobUrl;
+        a.download = fileName;
         document.body.appendChild(a);
         a.click();
         a.remove();
-        window.URL.revokeObjectURL(downloadUrl);
+        window.URL.revokeObjectURL(blobUrl);
 
         showStatus('Download erfolgreich abgeschlossen!', 'success');
     } catch (e) {
@@ -367,7 +348,7 @@ async function downloadMitCode() {
     }
 }
 
-// 3. Text an Handy senden
+// 3. Text an Handy
 async function sendeText() {
     const kanal = document.getElementById('kanal').value.trim();
     const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
@@ -389,7 +370,7 @@ async function sendeText() {
     }
 }
 
-// 4. Datei an Handy senden
+// 4. Datei an Handy
 async function sendeDateiAnHandy() {
     const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
