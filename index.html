@@ -254,6 +254,55 @@
             color: var(--accent-warning);
         }
 
+        /* WETTER STYLES */
+        .weather-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--input-bg);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 12px;
+        }
+
+        .weather-temp {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .weather-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .weather-hourly {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .weather-hour-box {
+            background-color: var(--input-bg);
+            border: 1px solid var(--card-border);
+            padding: 10px 6px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .weather-hour-time {
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .weather-hour-temp {
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
         .settings-btn {
             background: none;
             border: none;
@@ -307,15 +356,39 @@
 
 <div class="main-container">
 
-    <!-- LINKE KARTE: ARBEITSZEIT TIMER -->
+    <!-- LINKE KARTE: ARBEITSZEIT TIMER & WETTER -->
     <div class="card">
         <div class="card-header-wrapper">
-            <h2>Arbeitszeit</h2>
+            <h2>Übersicht</h2>
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn" title="Design umschalten">
                 <span id="themeIcon">☀️</span> <span id="themeText">Light</span>
             </button>
         </div>
         
+        <!-- WETTER SEKTION -->
+        <div class="section">
+            <div class="section-title">
+                <span>⛅ Wetter Barßel</span>
+                <span id="weatherLocation" style="font-size: 11px; text-transform: none; color: var(--text-muted);">Live via Open-Meteo</span>
+            </div>
+            
+            <div class="weather-main">
+                <div>
+                    <div id="weatherCondition" class="weather-desc">Lade Wetter...</div>
+                    <div id="weatherTemp" class="weather-temp">--°C</div>
+                </div>
+                <div id="weatherIconDisplay" style="font-size: 36px;">🌡️</div>
+            </div>
+
+            <div class="weather-hourly" id="weatherHourlyContainer">
+                <!-- Wird per JS befüllt -->
+                <div class="weather-hour-box"><div class="weather-hour-time">--:--</div><div style="font-size: 16px;">⏳</div><div class="weather-hour-temp">--°</div></div>
+                <div class="weather-hour-box"><div class="weather-hour-time">--:--</div><div style="font-size: 16px;">⏳</div><div class="weather-hour-temp">--°</div></div>
+                <div class="weather-hour-box"><div class="weather-hour-time">--:--</div><div style="font-size: 16px;">⏳</div><div class="weather-hour-temp">--°</div></div>
+                <div class="weather-hour-box"><div class="weather-hour-time">--:--</div><div style="font-size: 16px;">⏳</div><div class="weather-hour-temp">--°</div></div>
+            </div>
+        </div>
+
         <div class="section">
             <div class="section-title">
                 <span>⏱️ Aktuelle Phase</span>
@@ -414,6 +487,90 @@
 </div>
 
 <script>
+// --- WETTER LADEN (BARSEL) ---
+async function fetchWeather() {
+    try {
+        // Koordinaten von Barßel
+        const lat = 53.167;
+        const lon = 7.817;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&timezone=Europe%2FBerlin`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Aktuelle Daten
+        const currentTemp = Math.round(data.current.temperature_2m);
+        const weatherCode = data.current.weather_code;
+        
+        document.getElementById('weatherTemp').innerText = `${currentTemp}°C`;
+        const weatherInfo = getWeatherDescription(weatherCode);
+        document.getElementById('weatherCondition').innerText = weatherInfo.text;
+        document.getElementById('weatherIconDisplay').innerText = weatherInfo.icon;
+
+        // Stündliche Vorschau für heute (die nächsten Stunden ab jetzt)
+        const now = new Date();
+        const currentHourIndex = now.getHours();
+        
+        const hourlyContainer = document.getElementById('weatherHourlyContainer');
+        hourlyContainer.innerHTML = '';
+
+        // Zeige 4 Zeitslots im Abstand von 3 Stunden für den restlichen Tag
+        for (let i = 1; i <= 4; i++) {
+            let targetHour = currentHourIndex + (i * 2);
+            if (targetHour > 23) targetHour = 23; // Begrenzen
+
+            const timeString = `${String(targetHour).padStart(2, '0')}:00`;
+            const temp = Math.round(data.hourly.temperature_2m[targetHour]);
+            const code = data.hourly.weather_code[targetHour];
+            const info = getWeatherDescription(code);
+
+            const box = document.createElement('div');
+            box.className = 'weather-hour-box';
+            box.innerHTML = `
+                <div class="weather-hour-time">${timeString}</div>
+                <div style="font-size: 18px; margin: 2px 0;">${info.icon}</div>
+                <div class="weather-hour-temp">${temp}°</div>
+            `;
+            hourlyContainer.appendChild(box);
+
+        }
+    } catch (e) {
+        document.getElementById('weatherCondition').innerText = 'Fehler beim Laden';
+    }
+}
+
+function getWeatherCode() {
+    // Helper falls benötigt
+}
+
+function getWeatherDescription(code) {
+    // WMO Weather interpretation codes (Open-Meteo)
+    const codes = {
+        0: { text: "Klarer Himmel", icon: "☀️" },
+        1: { text: "Überwiegend klar", icon: "🌤️" },
+        2: { text: "Teilweise bewölkt", icon: "⛅" },
+        3: { text: "Bedeckt", icon: "☁️" },
+        45: { text: "Nebel", icon: "🌫️" },
+        48: { text: "Reifnebel", icon: "🌫️" },
+        51: { text: "Leichter Nieselregen", icon: "🌧️" },
+        53: { text: "Mäßiger Nieselregen", icon: "🌧️" },
+        55: { text: "Dichter Nieselregen", icon: "🌧️" },
+        61: { text: "Leichter Regen", icon: "🌦️" },
+        63: { text: "Mäßiger Regen", icon: "🌧️" },
+        65: { text: "Starker Regen", icon: "🌧️" },
+        71: { text: "Leichter Schneefall", icon: "🌨️" },
+        73: { text: "Mäßiger Schneefall", icon: "❄️" },
+        75: { text: "Starker Schneefall", icon: "❄️" },
+        95: { text: "Gewitter", icon: "⚡" }
+    };
+    return codes[code] || { text: "Wechselhaft", icon: "🌦️" };
+}
+
+// Wetter beim Start und alle 30 Minuten aktualisieren
+fetchWeather();
+setInterval(fetchWeather, 30 * 60 * 1000);
+
+
 // --- THEME TOGGLE LOGIK ---
 function setTheme(theme) {
     if (theme === 'light') {
@@ -623,10 +780,12 @@ async function uploadFuerCode() {
             generatedCodeDiv.innerText = code4;
             codeArea.style.display = 'block';
         } else { throw new Error(); }
-    } gewicht (e) {
+    } catch (e) {
         showStatus('Fehler beim Hochladen der Datei.', 'error');
     }
 }
+
+async classDownloadMitCode {}
 
 async function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
@@ -661,7 +820,7 @@ async function sendeText() {
 }
 
 async function sendeDateiAnHandy() {
-    const kanal = document.getElementById('kanal'].value.trim();
+    const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
 
     if (dateiInput.files.length === 0) {
@@ -670,7 +829,7 @@ async function sendeDateiAnHandy() {
     }
 
     const file = dateiInput.files[0];
-    showStatus(`Lade "${file.name}" hoch...`, 'loading');
+    showStatus(`Lade "${file.name}" hoch...`, 'loadings');
 
     try {
         const response = await fetch(`https://ntfy.sh/${kanal}`, {
