@@ -67,6 +67,8 @@
             padding: 16px;
             border-radius: 12px;
             margin-bottom: 20px;
+            position: relative; /* Wichtig für das absolute Overlay darin */
+            overflow: hidden;
         }
 
         .section-title {
@@ -149,14 +151,26 @@
             display: none;
         }
 
-        /* OVERLAY / LOCK CONTAINER */
-        .lock-container {
+        /* CUSTOM IN-SECTION OVERLAY */
+        .section-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 10;
             text-align: center;
-            padding: 10px 0;
         }
 
         .lock-icon {
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 8px;
         }
     </style>
@@ -186,31 +200,30 @@
         <button onclick="downloadMitCode()">Datei herunterladen</button>
     </div>
 
-    <!-- BEREICH 2: HANDY SENDER (GESCHÜTZT) -->
-    <div class="section">
+    <!-- BEREICH 2: HANDY SENDER (MIT DESIGN-OVERLAY) -->
+    <div class="section" id="handySection">
         <div class="section-title">📱 Handy-Direktversand</div>
         
-        <!-- Sperr-Ebene -->
-        <div id="handyLockOverlay" class="lock-container">
+        <!-- Das passgenaue Overlay -->
+        <div id="handyOverlay" class="section-overlay">
             <div class="lock-icon">🔒</div>
-            <label for="pinInput">PIN zum Freischalten eingeben:</label>
-            <input type="password" id="pinInput" placeholder="••••" maxlength="4" style="text-align: center; font-size: 18px; letter-spacing: 4px;">
-            <button onclick="freischaltenHandy()">Entsperren</button>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Bereich gesperrt</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Bitte PIN eingeben, um fortzufahren:</div>
+            <input type="password" id="overlayPinInput" placeholder="••••" maxlength="4" style="text-align: center; font-size: 20px; letter-spacing: 6px; max-width: 160px; margin-bottom: 10px;">
+            <button onclick="checkOverlayPin()" style="max-width: 160px; margin-top: 0;">Entsperren</button>
         </div>
 
-        <!-- Geschützter Inhalt -->
-        <div id="handyContent" style="display: none;">
-            <label for="kanal">Kanal-Name:</label>
-            <input type="text" id="kanal" value="mein_test_kanal_123">
+        <!-- Eigentlicher Inhalt (erst nach PIN sichtbar) -->
+        <label for="kanal">Kanal-Name:</label>
+        <input type="text" id="kanal" value="mein_test_kanal_123">
 
-            <label for="nachricht">Nachricht:</label>
-            <input type="text" id="nachricht" placeholder="Text eingeben...">
-            <button onclick="sendeText()">Text an Handy senden</button>
+        <label for="nachricht">Nachricht:</label>
+        <input type="text" id="nachricht" placeholder="Text eingeben...">
+        <button onclick="sendeText()">Text an Handy senden</button>
 
-            <label for="dateiHandy">Datei fürs Handy:</label>
-            <input type="file" id="dateiHandy">
-            <button onclick="sendeDateiAnHandy()">Datei an Handy senden</button>
-        </div>
+        <label for="dateiHandy">Datei fürs Handy:</label>
+        <input type="file" id="dateiHandy">
+        <button onclick="sendeDateiAnHandy()">Datei an Handy senden</button>
     </div>
 
     <div id="status"></div>
@@ -238,23 +251,24 @@ function showStatus(text, type = 'info') {
     }
 }
 
-function freischaltenHandy() {
-    const eingabe = document.getElementById('pinInput').value;
+function checkOverlayPin() {
+    const eingabe = document.getElementById('overlayPinInput').value;
     if (eingabe === REQUIRED_PIN) {
-        document.getElementById('handyLockOverlay').style.display = 'none';
-        document.getElementById('handyContent').style.display = 'block';
-        showStatus('Handy-Versand entsperrt.', 'success');
+        // Overlay ausblenden
+        document.getElementById('handyOverlay').style.display = 'none';
+        showStatus('Handy-Versand erfolgreich entsperrt.', 'success');
     } else {
         alert('Falscher PIN!');
-        document.getElementById('pinInput').value = '';
-        showStatus('Falscher PIN!', 'error');
+        document.getElementById('overlayPinInput').value = '';
+        document.getElementById('overlayPinInput').focus();
+        showStatus('Falscher PIN eingegeben.', 'error');
     }
 }
 
-// Enter-Taste beim PIN-Feld unterstützen
-document.getElementById('pinInput').addEventListener('keyup', function(e) {
+// Enter-Taste im PIN-Feld abfangen
+document.getElementById('overlayPinInput').addEventListener('keyup', function(e) {
     if (e.key === 'Enter') {
-        freischaltenHandy();
+        checkOverlayPin();
     }
 });
 
