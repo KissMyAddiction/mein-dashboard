@@ -81,11 +81,11 @@
             position: relative;
         }
 
-        .card-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+        .card-header-wrapper {
+            position: relative;
+            text-align: center;
+            margin-bottom: 24px;
+            padding-top: 5px;
         }
 
         h2 {
@@ -97,24 +97,29 @@
         }
 
         .theme-toggle-btn {
-            background-color: var(--section-bg);
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--input-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             width: auto;
             margin-top: 0;
         }
 
         .theme-toggle-btn:hover {
             border-color: var(--accent-primary);
-            transform: translateY(-1px);
+            background-color: var(--accent-primary);
+            color: #ffffff;
         }
 
         .section {
@@ -282,9 +287,9 @@
 
     <!-- LINKE KARTE: ARBEITSZEIT TIMER -->
     <div class="card">
-        <div class="card-header-flex">
+        <div class="card-header-wrapper">
             <h2>Arbeitszeit</h2>
-            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn" title="Design umschalten">
                 <span id="themeIcon">☀️</span> <span id="themeText">Light</span>
             </button>
         </div>
@@ -332,7 +337,9 @@
 
     <!-- RECHTE KARTE: CONTROL CENTER -->
     <div class="card">
-        <h2 style="margin-bottom: 20px;">Control Center</h2>
+        <div class="card-header-wrapper">
+            <h2>Control Center</h2>
+        </div>
 
         <!-- BEREICH 1: DATEI-AUSTAUSCH -->
         <div class="section">
@@ -602,6 +609,16 @@ async function uploadFuerCode() {
 }
 
 function downloadMitCode() {
+    const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
+    if (code4.length !== 4) {
+        alert('Footer Download...');
+        return;
+    }
+    // ...
+}
+
+// (Restliche Funktionen wie gehabt)
+async function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
     if (code4.length !== 4) {
         alert('Bitte gib einen 4-stelligen Code ein!');
