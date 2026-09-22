@@ -87,7 +87,7 @@
             color: var(--text-muted);
         }
 
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="file"], input[type="password"] {
             width: 100%;
             padding: 10px 14px;
             border-radius: 8px;
@@ -98,7 +98,7 @@
             outline: none;
         }
 
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
@@ -148,6 +148,48 @@
             font-weight: 500;
             display: none;
         }
+
+        /* MODAL POPUP FIXING */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 24px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-cancel {
+            background-color: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+        }
+
+        .btn-cancel:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
     </style>
 </head>
 <body>
@@ -184,18 +226,32 @@
 
         <label for="nachricht">Nachricht:</label>
         <input type="text" id="nachricht" placeholder="Text eingeben...">
-        <button onclick="sendeText()">Text an Handy senden</button>
+        <button onclick="starteHandyAktion('text')">Text an Handy senden</button>
 
         <label for="dateiHandy">Datei fürs Handy:</label>
         <input type="file" id="dateiHandy">
-        <button onclick="sendeDateiAnHandy()">Datei an Handy senden</button>
+        <button onclick="starteHandyAktion('datei')">Datei an Handy senden</button>
     </div>
 
     <div id="status"></div>
 </div>
 
+<!-- PIN MODAL (Zensiertes Passwort-Feld) -->
+<div id="pinModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+        <div class="section-title">🔒 PIN Eingeben</div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Bitte gib den Sicherheits-PIN ein:</p>
+        <input type="password" id="modalPinInput" maxlength="4" placeholder="••••" style="text-align: center; font-size: 20px; letter-spacing: 6px;">
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="schliessePinModal()">Abbrechen</button>
+            <button onclick="bestaetigePin()">Bestätigen</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const REQUIRED_PIN = "1919";
+let aktiveAktion = null;
 
 function showStatus(text, type = 'info') {
     const statusDiv = document.getElementById('status');
@@ -216,16 +272,46 @@ function showStatus(text, type = 'info') {
     }
 }
 
-function checkHandyPin() {
-    const userPin = prompt("Bitte gib den PIN für den Handy-Versand ein:");
-    if (userPin === REQUIRED_PIN) {
-        return true;
+// PIN Modal Steuerung
+function starteHandyAktion(typ) {
+    if (typ === 'datei' && document.getElementById('dateiHandy').files.length === 0) {
+        alert('Bitte wähle zuerst eine Datei aus!');
+        return;
+    }
+    aktiveAktion = typ;
+    document.getElementById('modalPinInput').value = '';
+    document.getElementById('pinModal').style.display = 'flex';
+    document.getElementById('modalPinInput').focus();
+}
+
+function schliessePinModal() {
+    document.getElementById('pinModal').style.display = 'none';
+    aktiveAktion = null;
+}
+
+function bestaetigePin() {
+    const eingabe = document.getElementById('modalPinInput').value;
+    if (eingabe === REQUIRED_PIN) {
+        document.getElementById('pinModal').style.display = 'none';
+        if (aktiveAktion === 'text') {
+            fuehreSendeTextAus();
+        } else if (aktiveAktion === 'datei') {
+            fuehreSendeDateiAus();
+        }
+        aktiveAktion = null;
     } else {
-        alert("Falscher PIN!");
-        showStatus("Falscher PIN - Abgebrochen", "error");
-        return false;
+        alert('Falscher PIN!');
+        document.getElementById('modalPinInput').value = '';
+        document.getElementById('modalPinInput').focus();
     }
 }
+
+// Event-Listener für Enter-Taste im PIN-Feld
+document.getElementById('modalPinInput').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        bestaetigePin();
+    }
+});
 
 function generate4DigitCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -287,10 +373,8 @@ function downloadMitCode() {
     window.location.href = `https://ntfy.sh/${transferChannel}/raw?attachment=1`;
 }
 
-// 3. Text an Handy (PIN erforderlich)
-async function sendeText() {
-    if (!checkHandyPin()) return;
-
+// 3. Text an Handy senden
+async function fuehreSendeTextAus() {
     const kanal = document.getElementById('kanal').value.trim();
     const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
 
@@ -311,19 +395,12 @@ async function sendeText() {
     }
 }
 
-// 4. Datei an Handy (PIN erforderlich)
-async function sendeDateiAnHandy() {
-    if (!checkHandyPin()) return;
-
+// 4. Datei an Handy senden
+async function fuehreSendeDateiAus() {
     const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
-
-    if (dateiInput.files.length === 0) {
-        alert('Bitte wähle zuerst eine Datei aus!');
-        return;
-    }
-
     const file = dateiInput.files[0];
+
     showStatus(`Lade "${file.name}" hoch...`, 'loading');
 
     try {
