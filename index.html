@@ -67,6 +67,7 @@
             max-width: 900px;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 10px;
         }
 
         .card {
@@ -80,7 +81,7 @@
             position: relative;
         }
 
-        .card-header {
+        .card-header-flex {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -99,7 +100,7 @@
             background-color: var(--section-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 6px 10px;
+            padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
@@ -107,6 +108,8 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            width: auto;
+            margin-top: 0;
         }
 
         .theme-toggle-btn:hover {
@@ -279,7 +282,7 @@
 
     <!-- LINKE KARTE: ARBEITSZEIT TIMER -->
     <div class="card">
-        <div class="card-header">
+        <div class="card-header-flex">
             <h2>Arbeitszeit</h2>
             <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">
                 <span id="themeIcon">☀️</span> <span id="themeText">Light</span>
@@ -329,9 +332,7 @@
 
     <!-- RECHTE KARTE: CONTROL CENTER -->
     <div class="card">
-        <div class="card-header">
-            <h2>Control Center</h2>
-        </div>
+        <h2 style="margin-bottom: 20px;">Control Center</h2>
 
         <!-- BEREICH 1: DATEI-AUSTAUSCH -->
         <div class="section">
@@ -545,6 +546,7 @@ function checkOverlayPin() {
         document.getElementById('handyOverlay').style.display = 'none';
         showStatus('Handy-Versand erfolgreich entsperrt.', 'success');
     } else {
+        alert('Falscher PIN!');
         document.getElementById('overlayPinInput').value = '';
         document.getElementById('overlayPinInput').focus();
         showStatus('Falscher PIN eingegeben.', 'error');
@@ -572,7 +574,7 @@ async function uploadFuerCode() {
     const generatedCodeDiv = document.getElementById('generatedCode');
 
     if (dateiInput.files.length === 0) {
-        showStatus('Bitte wähle zuerst eine Datei aus!', 'error');
+        alert('Bitte wähle zuerst eine Datei aus!');
         return;
     }
 
@@ -602,7 +604,7 @@ async function uploadFuerCode() {
 function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
     if (code4.length !== 4) {
-        showStatus('Bitte gib einen 4-stelligen Code ein!', 'error');
+        alert('Bitte gib einen 4-stelligen Code ein!');
         return;
     }
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
@@ -636,7 +638,7 @@ async function sendeDateiAnHandy() {
     const dateiInput = document.getElementById('dateiHandy');
 
     if (dateiInput.files.length === 0) {
-        showStatus('Bitte wähle zuerst eine Datei aus!', 'error');
+        alert('Bitte wähle zuerst eine Datei aus!');
         return;
     }
 
