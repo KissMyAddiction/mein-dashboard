@@ -87,7 +87,7 @@
             color: var(--text-muted);
         }
 
-        input[type="text"], input[type="file"] {
+        input[type="text"], input[type="file"], input[type="password"] {
             width: 100%;
             padding: 10px 14px;
             border-radius: 8px;
@@ -98,7 +98,7 @@
             outline: none;
         }
 
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="password"]:focus {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
@@ -123,17 +123,6 @@
         button:hover {
             background-color: var(--accent-primary-hover);
             transform: translateY(-1px);
-        }
-
-        button.alarm-btn {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: var(--accent-danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        button.alarm-btn:hover {
-            background-color: var(--accent-danger);
-            color: #ffffff;
         }
 
         .code-display {
@@ -200,14 +189,14 @@
         <label for="dateiHandy">Datei fürs Handy:</label>
         <input type="file" id="dateiHandy">
         <button onclick="sendeDateiAnHandy()">Datei an Handy senden</button>
-
-        <button class="alarm-btn" onclick="sendeAlarm()">⚠️ Test-Alarm auslösen</button>
     </div>
 
     <div id="status"></div>
 </div>
 
 <script>
+const REQUIRED_PIN = "1919";
+
 function showStatus(text, type = 'info') {
     const statusDiv = document.getElementById('status');
     statusDiv.style.display = 'block';
@@ -224,6 +213,17 @@ function showStatus(text, type = 'info') {
         statusDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
         statusDiv.style.color = 'var(--accent-danger)';
         statusDiv.innerText = text;
+    }
+}
+
+function verifyPin() {
+    const userPin = prompt("Bitte gib den Sicherheits-PIN ein:");
+    if (userPin === REQUIRED_PIN) {
+        return true;
+    } else {
+        alert("Falscher PIN! Zugriff verweigert.");
+        showStatus("Falscher PIN eingegeben.", "error");
+        return false;
     }
 }
 
@@ -273,7 +273,7 @@ async function uploadFuerCode() {
     }
 }
 
-// 2. Download ohne Blocking & ohne CORS-Problem
+// 2. Download mit Code
 function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
 
@@ -284,13 +284,13 @@ function downloadMitCode() {
 
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
     showStatus('Download wird gestartet...', 'success');
-
-    // Direktes Auslösen des Browser-Downloads ohne fetch/CORS
     window.location.href = `https://ntfy.sh/${transferChannel}/raw`;
 }
 
-// 3. Text an Handy
+// 3. Text an Handy (PIN-Geschützt)
 async function sendeText() {
+    if (!verifyPin()) return;
+
     const kanal = document.getElementById('kanal').value.trim();
     const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
 
@@ -311,8 +311,10 @@ async function sendeText() {
     }
 }
 
-// 4. Datei an Handy
+// 4. Datei an Handy (PIN-Geschützt)
 async function sendeDateiAnHandy() {
+    if (!verifyPin()) return;
+
     const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
 
@@ -339,30 +341,6 @@ async function sendeDateiAnHandy() {
         } else { throw new Error(); }
     } catch (e) {
         showStatus('Fehler beim Datei-Upload!', 'error');
-    }
-}
-
-// 5. Test-Alarm
-async function sendeAlarm() {
-    const kanal = document.getElementById('kanal').value.trim();
-    showStatus('Sende Alarm...', 'loading');
-
-    try {
-        const response = await fetch(`https://ntfy.sh/${kanal}`, {
-            method: 'POST',
-            body: 'Achtung! Das ist ein hoher Alarm-Test von deinem Dashboard.',
-            headers: {
-                'Title': '🚨 System Alarm!',
-                'Priority': 'high',
-                'Tags': 'warning,fire'
-            }
-        });
-
-        if (response.ok) {
-            showStatus('Alarm erfolgreich ausgelöst!', 'success');
-        } else { throw new Error(); }
-    } catch (e) {
-        showStatus('Fehler beim Alarm-Senden!', 'error');
     }
 }
 </script>
