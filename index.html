@@ -6,28 +6,31 @@
     <title>Control Center & Timer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #0f172a;
-            --card-bg: #1e293b;
-            --card-border: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-main: #090d16;
+            --card-bg: rgba(17, 24, 39, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-border-glow: rgba(99, 102, 241, 0.3);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
             --accent-primary: #6366f1;
             --accent-primary-hover: #4f46e5;
             --accent-success: #10b981;
             --accent-warning: #f59e0b;
             --accent-danger: #ef4444;
-            --input-bg: #0f172a;
-            --section-bg: rgba(15, 23, 42, 0.4);
-            --overlay-bg: rgba(30, 41, 59, 0.95);
+            --input-bg: rgba(3, 7, 18, 0.6);
+            --section-bg: rgba(255, 255, 255, 0.02);
+            --overlay-bg: rgba(11, 15, 25, 0.92);
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
         }
 
         [data-theme="light"] {
-            --bg-main: #f1f5f9;
-            --card-bg: #ffffff;
-            --card-border: #cbd5e1;
+            --bg-main: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.06);
+            --card-border-glow: rgba(79, 70, 229, 0.2);
             --text-main: #0f172a;
             --text-muted: #64748b;
             --accent-primary: #4f46e5;
@@ -35,18 +38,19 @@
             --accent-success: #059669;
             --accent-warning: #d97706;
             --accent-danger: #dc2626;
-            --input-bg: #f8fafc;
-            --section-bg: rgba(241, 245, 249, 0.6);
-            --overlay-bg: rgba(255, 255, 255, 0.95);
+            --input-bg: rgba(241, 245, 249, 0.8);
+            --section-bg: rgba(0, 0, 0, 0.015);
+            --overlay-bg: rgba(255, 255, 255, 0.92);
+            --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
         }
 
         * {
             box-sizing: border-box;
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease-in-out;
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.2s ease;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             display: flex;
@@ -54,46 +58,52 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 30px 20px;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
         }
 
         .main-container {
             display: flex;
-            gap: 20px;
+            gap: 24px;
             width: 100%;
-            max-width: 900px;
+            max-width: 960px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 10px;
         }
 
         .card {
             background-color: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 28px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
             width: 100%;
-            max-width: 420px;
+            max-width: 450px;
             position: relative;
+        }
+
+        .card:hover {
+            border-color: var(--card-border-glow);
         }
 
         .card-header-wrapper {
             position: relative;
             text-align: center;
             margin-bottom: 24px;
-            padding-top: 5px;
+            padding-top: 4px;
         }
 
         h2 {
             margin: 0;
             color: var(--text-main);
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
         }
 
         .theme-toggle-btn {
@@ -104,41 +114,42 @@
             background-color: var(--input-bg);
             border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 6px 10px;
-            border-radius: 8px;
+            padding: 7px 12px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             width: auto;
-            margin-top: 0;
+            margin: 0;
         }
 
         .theme-toggle-btn:hover {
             border-color: var(--accent-primary);
             background-color: var(--accent-primary);
             color: #ffffff;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         .section {
             background: var(--section-bg);
             border: 1px solid var(--card-border);
-            padding: 16px;
-            border-radius: 12px;
+            padding: 18px;
+            border-radius: 14px;
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
         }
 
         .section-title {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             color: var(--text-muted);
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -146,7 +157,7 @@
 
         label {
             display: block;
-            margin-top: 10px;
+            margin-top: 12px;
             margin-bottom: 6px;
             font-size: 13px;
             font-weight: 500;
@@ -155,8 +166,8 @@
 
         input[type="text"], input[type="file"], input[type="password"], input[type="time"] {
             width: 100%;
-            padding: 10px 14px;
-            border-radius: 8px;
+            padding: 11px 14px;
+            border-radius: 10px;
             border: 1px solid var(--card-border);
             background-color: var(--input-bg);
             color: var(--text-main);
@@ -164,51 +175,58 @@
             outline: none;
         }
 
+        input[type="file"] {
+            padding: 9px;
+            cursor: pointer;
+        }
+
         input:focus {
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
         }
 
         button {
             width: 100%;
-            padding: 11px;
-            margin-top: 12px;
+            padding: 12px;
+            margin-top: 14px;
             background-color: var(--accent-primary);
             color: #ffffff;
             font-size: 14px;
             font-weight: 600;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
 
         button:hover {
             background-color: var(--accent-primary-hover);
             transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
         }
 
         .code-display {
             background-color: var(--input-bg);
             padding: 14px;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             letter-spacing: 6px;
             color: var(--accent-success);
-            margin-top: 12px;
-            border: 1px dashed var(--accent-success);
+            margin-top: 14px;
+            border: 1px dashed rgba(16, 185, 129, 0.4);
             user-select: all;
         }
 
         #status {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 10px;
             font-size: 13px;
             text-align: center;
             font-weight: 500;
@@ -217,10 +235,10 @@
 
         .timer-display {
             background-color: var(--input-bg);
-            padding: 16px;
-            border-radius: 8px;
+            padding: 18px;
+            border-radius: 12px;
             text-align: center;
-            font-size: 32px;
+            font-size: 34px;
             font-weight: 700;
             color: var(--accent-success);
             margin-top: 10px;
@@ -229,7 +247,7 @@
         }
 
         .timer-status {
-            font-size: 14px;
+            font-size: 13px;
             text-align: center;
             margin-top: 10px;
             font-weight: 600;
@@ -241,20 +259,23 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             padding: 0;
             margin: 0;
             width: auto;
+            box-shadow: none;
         }
         .settings-btn:hover {
             color: var(--text-main);
-            transform: none;
+            transform: scale(1.1);
+            background: none;
+            box-shadow: none;
         }
 
         .settings-panel {
             display: none;
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 16px;
+            padding-top: 16px;
             border-top: 1px solid var(--card-border);
         }
 
@@ -265,18 +286,19 @@
             width: 100%;
             height: 100%;
             background-color: var(--overlay-bg);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
             z-index: 10;
             text-align: center;
         }
 
         .lock-icon {
-            font-size: 28px;
+            font-size: 32px;
             margin-bottom: 8px;
         }
     </style>
@@ -305,7 +327,7 @@
 
             <!-- EINSTELLUNGS-PANEL -->
             <div id="settingsPanel" class="settings-panel">
-                <div class="section-title" style="margin-bottom: 8px;">Zeiten anpassen</div>
+                <div class="section-title" style="margin-bottom: 6px;">Zeiten anpassen</div>
                 <label>Arbeitsbeginn (Mo-Do):</label>
                 <input type="time" id="cfgStart" value="07:30">
                 
@@ -321,7 +343,7 @@
 
         <div class="section">
             <div class="section-title">📋 Heutiger Ablauf</div>
-            <div id="scheduleInfo" style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+            <div id="scheduleInfo" style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
                 • 07:30 - 08:55: Arbeit<br>
                 • 08:55 - 09:30: Frühstückspause (35 Min)<br>
                 • 09:30 - 11:00: Arbeit<br>
@@ -362,16 +384,16 @@
         </div>
 
         <!-- BEREICH 2: HANDY SENDER (GESCHÜTZT) -->
-        <div class="section" id="handySection">
+        <div class="section" id="handySection" style="margin-bottom: 0;">
             <div class="section-title">📱 Handy-Direktversand</div>
             
             <!-- Overlay für PIN -->
             <div id="handyOverlay" class="section-overlay">
                 <div class="lock-icon">🔒</div>
-                <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Bereich gesperrt</div>
-                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Bitte PIN eingeben:</div>
-                <input type="password" id="overlayPinInput" placeholder="••••" maxlength="4" style="text-align: center; font-size: 20px; letter-spacing: 6px; max-width: 160px; margin-bottom: 10px;">
-                <button onclick="checkOverlayPin()" style="max-width: 160px; margin-top: 0;">Entsperren</button>
+                <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">Bereich gesperrt</div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">Bitte PIN eingeben:</div>
+                <input type="password" id="overlayPinInput" placeholder="••••" maxlength="4" style="text-align: center; font-size: 22px; letter-spacing: 8px; max-width: 170px; margin-bottom: 12px;">
+                <button onclick="checkOverlayPin()" style="max-width: 170px; margin-top: 0;">Entsperren</button>
             </div>
 
             <label for="kanal">Kanal-Name:</label>
@@ -416,14 +438,12 @@ function toggleTheme() {
     }
 }
 
-// Beim Start gespeichertes Theme laden
 (function() {
     const savedTheme = localStorage.getItem('dashboard_theme');
     if (savedTheme) {
         setTheme(savedTheme);
     }
 })();
-
 
 // --- TIMER LOGIK ---
 const REQUIRED_PIN = "1919";
@@ -533,15 +553,15 @@ function showStatus(text, type = 'info') {
     statusDiv.style.display = 'block';
     
     if (type === 'loading') {
-        statusDiv.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+        statusDiv.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
         statusDiv.style.color = 'var(--accent-warning)';
         statusDiv.innerText = text;
     } else if (type === 'success') {
-        statusDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+        statusDiv.style.backgroundColor = 'rgba(16, 185, 129, 0.12)';
         statusDiv.style.color = 'var(--accent-success)';
         statusDiv.innerText = text;
     } else if (type === 'error') {
-        statusDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+        statusDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
         statusDiv.style.color = 'var(--accent-danger)';
         statusDiv.innerText = text;
     }
@@ -603,21 +623,11 @@ async function uploadFuerCode() {
             generatedCodeDiv.innerText = code4;
             codeArea.style.display = 'block';
         } else { throw new Error(); }
-    } catch (e) {
+    } gewicht (e) {
         showStatus('Fehler beim Hochladen der Datei.', 'error');
     }
 }
 
-function downloadMitCode() {
-    const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
-    if (code4.length !== 4) {
-        alert('Footer Download...');
-        return;
-    }
-    // ...
-}
-
-// (Restliche Funktionen wie gehabt)
 async function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
     if (code4.length !== 4) {
@@ -651,7 +661,7 @@ async function sendeText() {
 }
 
 async function sendeDateiAnHandy() {
-    const kanal = document.getElementById('kanal').value.trim();
+    const kanal = document.getElementById('kanal'].value.trim();
     const dateiInput = document.getElementById('dateiHandy');
 
     if (dateiInput.files.length === 0) {
