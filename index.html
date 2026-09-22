@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Handy-Steuerung Dashboard</title>
+    <title>Handy-Steuerung & Dateitransfer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,18 +23,24 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
             width: 100%;
-            max-width: 360px;
+            max-width: 400px;
         }
-        h2 {
+        h2, h3 {
             margin-top: 0;
             color: #89b4fa;
             text-align: center;
         }
+        h3 {
+            font-size: 16px;
+            margin-top: 15px;
+            border-bottom: 1px solid #45475a;
+            padding-bottom: 5px;
+        }
         label {
             display: block;
-            margin-top: 15px;
+            margin-top: 10px;
             margin-bottom: 5px;
-            font-size: 14px;
+            font-size: 13px;
         }
         input[type="text"], input[type="file"] {
             width: 100%;
@@ -47,8 +53,8 @@
         }
         button {
             width: 100%;
-            padding: 12px;
-            margin-top: 15px;
+            padding: 10px;
+            margin-top: 10px;
             background-color: #a6e3a1;
             color: #11111b;
             font-weight: bold;
@@ -60,6 +66,12 @@
         button:hover {
             background-color: #94e2d5;
         }
+        button.blue-btn {
+            background-color: #89b4fa;
+        }
+        button.blue-btn:hover {
+            background-color: #b4befe;
+        }
         button.alarm-btn {
             background-color: #f38ba8;
             color: #11111b;
@@ -67,8 +79,20 @@
         button.alarm-btn:hover {
             background-color: #eba0ac;
         }
+        .code-display {
+            background-color: #181825;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #f9e2af;
+            margin-top: 10px;
+            user-select: all;
+        }
         #status {
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 13px;
             text-align: center;
             min-height: 18px;
@@ -78,29 +102,56 @@
 <body>
 
 <div class="card">
-    <h2>Handy Control Center</h2>
+    <h2>Control Center</h2>
     
-    <label for="kanal">Kanal-Name:</label>
+    <label for="kanal">Mein Handy-Kanal Name:</label>
     <input type="text" id="kanal" value="mein_test_kanal_123">
 
+    <!-- BEREICH 1: HANDY SENDER -->
+    <h3>📱 An Handy senden</h3>
     <label for="nachricht">Text / Nachricht:</label>
     <input type="text" id="nachricht" placeholder="Sende eine kurze Info...">
-
     <button onclick="sendeText()">Text an Handy senden</button>
 
-    <label for="datei">Datei anhängen:</label>
-    <input type="file" id="datei">
-    <button onclick="sendeDatei()">Datei an Handy senden</button>
+    <label for="dateiHandy">Datei für Handy:</label>
+    <input type="file" id="dateiHandy">
+    <button onclick="sendeDateiAnHandy()">Datei an Handy senden</button>
 
-    <hr style="border-color: #45475a; margin-top: 20px;">
+    <button class="alarm-btn" onclick="sendeAlarm()">⚠️ Test-Alarm auslösen</button>
 
-    <button class="alarm-btn" onclick="sendeAlarm()">⚠️ Test-Alarm (mit Emoji & Link) auslösen</button>
+    <!-- BEREICH 2: DATEI-AUSTAUSCH PER CODE -->
+    <h3>📂 Datei-Austausch (PC ↔ PC)</h3>
+    
+    <!-- Hochladen -->
+    <label for="dateiCode">Datei freigeben:</label>
+    <input type="file" id="dateiCode">
+    <button class="blue-btn" onclick="uploadFuerCode()">Datei hochladen & Code erstellen</button>
+    
+    <div id="codeArea" style="display: none;">
+        <label>Dein Abhol-Code:</label>
+        <div class="code-display" id="generatedCode">------</div>
+    </div>
+
+    <!-- Herunterladen -->
+    <label for="downloadCode" style="margin-top: 15px;">Datei mit Code abholen:</label>
+    <input type="text" id="downloadCode" placeholder="Code hier eingeben..." style="text-transform: uppercase;">
+    <button class="blue-btn" onclick="downloadMitCode()">Datei herunterladen</button>
 
     <div id="status"></div>
 </div>
 
 <script>
-// 1. Normalen Text senden
+// Hilfsfunktion: Zufälligen Code generieren
+function generateCode(length = 6) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
+// 1. Normalen Text an Handy senden
 async function sendeText() {
     const kanal = document.getElementById('kanal').value.trim();
     const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
@@ -126,10 +177,10 @@ async function sendeText() {
     }
 }
 
-// 2. Datei senden
-async function sendeDatei() {
+// 2. Datei an Handy senden
+async function sendeDateiAnHandy() {
     const kanal = document.getElementById('kanal').value.trim();
-    const dateiInput = document.getElementById('datei');
+    const dateiInput = document.getElementById('dateiHandy');
     const statusDiv = document.getElementById('status');
 
     if (dateiInput.files.length === 0) {
@@ -153,7 +204,7 @@ async function sendeDatei() {
 
         if (response.ok) {
             statusDiv.style.color = '#a6e3a1';
-            statusDiv.innerText = 'Datei erfolgreich gesendet!';
+            statusDiv.innerText = 'Datei erfolgreich ans Handy gesendet!';
         } else { throw new Error(); }
     } catch (e) {
         statusDiv.style.color = '#f38ba8';
@@ -161,7 +212,7 @@ async function sendeDatei() {
     }
 }
 
-// 3. Dringenden Alarm mit Button senden
+// 3. Alarm senden
 async function sendeAlarm() {
     const kanal = document.getElementById('kanal').value.trim();
     const statusDiv = document.getElementById('status');
@@ -189,6 +240,68 @@ async function sendeAlarm() {
         statusDiv.style.color = '#f38ba8';
         statusDiv.innerText = 'Fehler beim Alarm-Senden!';
     }
+}
+
+// 4. Datei hochladen und Code generieren
+async function uploadFuerCode() {
+    const dateiInput = document.getElementById('dateiCode');
+    const statusDiv = document.getElementById('status');
+    const codeArea = document.getElementById('codeArea');
+    const generatedCodeDiv = document.getElementById('generatedCode');
+
+    if (dateiInput.files.length === 0) {
+        alert('Bitte wähle eine Datei zum Freigeben aus!');
+        return;
+    }
+
+    const file = dateiInput.files[0];
+    const transferCode = 'TRANSFER_' + generateCode(6);
+
+    statusDiv.style.color = '#f9e2af';
+    statusDiv.innerText = `Lade hoch... Bitte warten.`;
+
+    try {
+        const response = await fetch(`https://ntfy.sh/${transferCode}`, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Filename': file.name,
+                'Title': 'Code Download'
+            }
+        });
+
+        if (response.ok) {
+            statusDiv.style.color = '#a6e3a1';
+            statusDiv.innerText = 'Datei hochgeladen!';
+            
+            // Code anzeigen (ohne das "TRANSFER_" Präfix für den Nutzer)
+            generatedCodeDiv.innerText = transferCode.replace('TRANSFER_', '');
+            codeArea.style.display = 'block';
+        } else { throw new Error(); }
+    } catch (e) {
+        statusDiv.style.color = '#f38ba8';
+        statusDiv.innerText = 'Fehler beim Freigeben!';
+    }
+}
+
+// 5. Datei mit Code abholen
+function downloadMitCode() {
+    const rawCode = document.getElementById('downloadCode').value.trim().toUpperCase();
+    const statusDiv = document.getElementById('status');
+
+    if (!rawCode) {
+        alert('Bitte gib einen Code ein!');
+        return;
+    }
+
+    const fullChannel = 'TRANSFER_' + rawCode;
+    const downloadUrl = `https://ntfy.sh/${fullChannel}/raw`;
+
+    statusDiv.style.color = '#a6e3a1';
+    statusDiv.innerText = 'Download wird gestartet...';
+
+    // Öffnet den Download-Link direkt
+    window.open(downloadUrl, '_blank');
 }
 </script>
 
