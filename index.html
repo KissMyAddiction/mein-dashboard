@@ -60,35 +60,6 @@
                 radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
         }
 
-        /* Top Bar für den Theme-Toggle */
-        .top-bar {
-            width: 100%;
-            max-width: 900px;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-
-        .theme-toggle-btn {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-toggle-btn:hover {
-            border-color: var(--accent-primary);
-            transform: translateY(-1px);
-        }
-
         .main-container {
             display: flex;
             gap: 20px;
@@ -109,13 +80,38 @@
             position: relative;
         }
 
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
         h2 {
-            margin: 0 0 20px 0;
+            margin: 0;
             color: var(--text-main);
-            text-align: center;
             font-size: 22px;
             font-weight: 700;
             letter-spacing: -0.5px;
+        }
+
+        .theme-toggle-btn {
+            background-color: var(--section-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
         }
 
         .section {
@@ -211,7 +207,6 @@
             display: none;
         }
 
-        /* Timer Design */
         .timer-display {
             background-color: var(--input-bg);
             padding: 16px;
@@ -255,7 +250,6 @@
             border-top: 1px solid var(--card-border);
         }
 
-        /* Custom In-Section Overlay */
         .section-overlay {
             position: absolute;
             top: 0;
@@ -281,17 +275,16 @@
 </head>
 <body>
 
-<div class="top-bar">
-    <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">
-        <span id="themeIcon">☀️</span> <span id="themeText">Light Mode</span>
-    </button>
-</div>
-
 <div class="main-container">
 
     <!-- LINKE KARTE: ARBEITSZEIT TIMER -->
     <div class="card">
-        <h2>Arbeitszeit</h2>
+        <div class="card-header">
+            <h2>Arbeitszeit</h2>
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeToggleBtn">
+                <span id="themeIcon">☀️</span> <span id="themeText">Light</span>
+            </button>
+        </div>
         
         <div class="section">
             <div class="section-title">
@@ -336,7 +329,9 @@
 
     <!-- RECHTE KARTE: CONTROL CENTER -->
     <div class="card">
-        <h2>Control Center</h2>
+        <div class="card-header">
+            <h2>Control Center</h2>
+        </div>
 
         <!-- BEREICH 1: DATEI-AUSTAUSCH -->
         <div class="section">
@@ -394,12 +389,12 @@ function setTheme(theme) {
     if (theme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
         document.getElementById('themeIcon').innerText = '🌙';
-        document.getElementById('themeText').innerText = 'Dark Mode';
+        document.getElementById('themeText').innerText = 'Dark';
         localStorage.setItem('dashboard_theme', 'light');
     } else {
         document.documentElement.removeAttribute('data-theme');
         document.getElementById('themeIcon').innerText = '☀️';
-        document.getElementById('themeText').innerText = 'Light Mode';
+        document.getElementById('themeText').innerText = 'Light';
         localStorage.setItem('dashboard_theme', 'dark');
     }
 }
@@ -550,7 +545,6 @@ function checkOverlayPin() {
         document.getElementById('handyOverlay').style.display = 'none';
         showStatus('Handy-Versand erfolgreich entsperrt.', 'success');
     } else {
-        alert('Falscher PIN!');
         document.getElementById('overlayPinInput').value = '';
         document.getElementById('overlayPinInput').focus();
         showStatus('Falscher PIN eingegeben.', 'error');
@@ -578,7 +572,7 @@ async function uploadFuerCode() {
     const generatedCodeDiv = document.getElementById('generatedCode');
 
     if (dateiInput.files.length === 0) {
-        alert('Bitte wähle zuerst eine Datei aus!');
+        showStatus('Bitte wähle zuerst eine Datei aus!', 'error');
         return;
     }
 
@@ -608,7 +602,7 @@ async function uploadFuerCode() {
 function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
     if (code4.length !== 4) {
-        alert('Bitte gib einen 4-stelligen Code ein!');
+        showStatus('Bitte gib einen 4-stelligen Code ein!', 'error');
         return;
     }
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
@@ -642,7 +636,7 @@ async function sendeDateiAnHandy() {
     const dateiInput = document.getElementById('dateiHandy');
 
     if (dateiInput.files.length === 0) {
-        alert('Bitte wähle zuerst eine Datei aus!');
+        showStatus('Bitte wähle zuerst eine Datei aus!', 'error');
         return;
     }
 
