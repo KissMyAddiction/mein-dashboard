@@ -87,7 +87,7 @@
             color: var(--text-muted);
         }
 
-        input[type="text"], input[type="file"], input[type="password"] {
+        input[type="text"], input[type="file"] {
             width: 100%;
             padding: 10px 14px;
             border-radius: 8px;
@@ -98,7 +98,7 @@
             outline: none;
         }
 
-        input[type="text"]:focus, input[type="password"]:focus {
+        input[type="text"]:focus {
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
@@ -182,9 +182,6 @@
         <label for="kanal">Kanal-Name:</label>
         <input type="text" id="kanal" value="mein_test_kanal_123">
 
-        <label for="handyPin">Sicherheits-PIN:</label>
-        <input type="password" id="handyPin" placeholder="PIN eingeben" maxlength="4">
-
         <label for="nachricht">Nachricht:</label>
         <input type="text" id="nachricht" placeholder="Text eingeben...">
         <button onclick="sendeText()">Text an Handy senden</button>
@@ -219,13 +216,15 @@ function showStatus(text, type = 'info') {
     }
 }
 
-function checkPin() {
-    const enteredPin = document.getElementById('handyPin').value;
-    if (enteredPin !== REQUIRED_PIN) {
-        showStatus('Falscher PIN! Zugriff verweigert.', 'error');
+function checkHandyPin() {
+    const userPin = prompt("Bitte gib den PIN für den Handy-Versand ein:");
+    if (userPin === REQUIRED_PIN) {
+        return true;
+    } else {
+        alert("Falscher PIN!");
+        showStatus("Falscher PIN - Abgebrochen", "error");
         return false;
     }
-    return true;
 }
 
 function generate4DigitCode() {
@@ -274,7 +273,7 @@ async function uploadFuerCode() {
     }
 }
 
-// 2. Sofortiger Download ohne Ladeschleife
+// 2. Download mit Code
 function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
 
@@ -284,15 +283,13 @@ function downloadMitCode() {
     }
 
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
-    showStatus('Download wird ausgeführt...', 'success');
-    
-    // Vermeidet Hängenbleiben durch erzwungenen Attachment-Download
+    showStatus('Download wird gestartet...', 'success');
     window.location.href = `https://ntfy.sh/${transferChannel}/raw?attachment=1`;
 }
 
-// 3. Text an Handy (PIN-Geschützt)
+// 3. Text an Handy (PIN erforderlich)
 async function sendeText() {
-    if (!checkPin()) return;
+    if (!checkHandyPin()) return;
 
     const kanal = document.getElementById('kanal').value.trim();
     const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
@@ -314,9 +311,9 @@ async function sendeText() {
     }
 }
 
-// 4. Datei an Handy (PIN-Geschützt)
+// 4. Datei an Handy (PIN erforderlich)
 async function sendeDateiAnHandy() {
-    if (!checkPin()) return;
+    if (!checkHandyPin()) return;
 
     const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
