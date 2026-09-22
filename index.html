@@ -182,6 +182,9 @@
         <label for="kanal">Kanal-Name:</label>
         <input type="text" id="kanal" value="mein_test_kanal_123">
 
+        <label for="handyPin">Sicherheits-PIN:</label>
+        <input type="password" id="handyPin" placeholder="PIN eingeben" maxlength="4">
+
         <label for="nachricht">Nachricht:</label>
         <input type="text" id="nachricht" placeholder="Text eingeben...">
         <button onclick="sendeText()">Text an Handy senden</button>
@@ -216,15 +219,13 @@ function showStatus(text, type = 'info') {
     }
 }
 
-function verifyPin() {
-    const userPin = prompt("Bitte gib den Sicherheits-PIN ein:");
-    if (userPin === REQUIRED_PIN) {
-        return true;
-    } else {
-        alert("Falscher PIN! Zugriff verweigert.");
-        showStatus("Falscher PIN eingegeben.", "error");
+function checkPin() {
+    const enteredPin = document.getElementById('handyPin').value;
+    if (enteredPin !== REQUIRED_PIN) {
+        showStatus('Falscher PIN! Zugriff verweigert.', 'error');
         return false;
     }
+    return true;
 }
 
 function generate4DigitCode() {
@@ -273,7 +274,7 @@ async function uploadFuerCode() {
     }
 }
 
-// 2. Download mit Code
+// 2. Sofortiger Download ohne Ladeschleife
 function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
 
@@ -283,13 +284,15 @@ function downloadMitCode() {
     }
 
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
-    showStatus('Download wird gestartet...', 'success');
-    window.location.href = `https://ntfy.sh/${transferChannel}/raw`;
+    showStatus('Download wird ausgeführt...', 'success');
+    
+    // Vermeidet Hängenbleiben durch erzwungenen Attachment-Download
+    window.location.href = `https://ntfy.sh/${transferChannel}/raw?attachment=1`;
 }
 
 // 3. Text an Handy (PIN-Geschützt)
 async function sendeText() {
-    if (!verifyPin()) return;
+    if (!checkPin()) return;
 
     const kanal = document.getElementById('kanal').value.trim();
     const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
@@ -313,7 +316,7 @@ async function sendeText() {
 
 // 4. Datei an Handy (PIN-Geschützt)
 async function sendeDateiAnHandy() {
-    if (!verifyPin()) return;
+    if (!checkPin()) return;
 
     const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
