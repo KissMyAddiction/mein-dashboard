@@ -157,21 +157,21 @@
 
         label {
             display: block;
-            margin-top: 12px;
-            margin-bottom: 6px;
-            font-size: 13px;
+            margin-top: 10px;
+            margin-bottom: 4px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--text-muted);
         }
 
         input[type="text"], input[type="file"], input[type="password"], input[type="time"] {
             width: 100%;
-            padding: 11px 14px;
+            padding: 9px 12px;
             border-radius: 10px;
             border: 1px solid var(--card-border);
             background-color: var(--input-bg);
             color: var(--text-main);
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
         }
 
@@ -277,6 +277,17 @@
             margin-top: 16px;
             padding-top: 16px;
             border-top: 1px solid var(--card-border);
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 10px;
+        }
+        .settings-row > div {
+            flex: 1;
         }
 
         .section-overlay {
@@ -307,7 +318,7 @@
 
 <div class="main-container">
 
-    <!-- LINKE KARTE: TIMER, WETTER & ABLAUF -->
+    <!-- LINKE KARTE: WETTER & TIMER -->
     <div class="card">
         <div class="card-header-wrapper">
             <h2>Übersicht</h2>
@@ -324,7 +335,7 @@
             </div>
         </div>
 
-        <div class="section">
+        <div class="section" style="margin-bottom: 0;">
             <div class="section-title">
                 <span>⏱️ Aktuelle Phase</span>
                 <button class="settings-btn" onclick="toggleSettings()" title="Einstellungen">⚙️</button>
@@ -333,34 +344,73 @@
             <div id="currentPhaseName" class="timer-status">Lade Status...</div>
             <div id="timerCountdown" class="timer-display">00:00:00</div>
 
-            <!-- EINSTELLUNGS-PANEL -->
+            <!-- ERWEITERTES EINSTELLUNGS-PANEL -->
             <div id="settingsPanel" class="settings-panel">
-                <div class="section-title" style="margin-bottom: 6px;">Zeiten anpassen</div>
-                <label>Arbeitsbeginn (Mo-Do):</label>
-                <input type="time" id="cfgStart" value="07:30">
+                <div class="section-title" style="margin-bottom: 8px;">Zeiten-Konfiguration (Mo-Do)</div>
                 
-                <label>Feierabend (Mo-Do):</label>
+                <label>Arbeitsbeginn:</label>
+                <input type="time" id="cfgStart" value="07:30">
+
+                <div class="settings-row">
+                    <div>
+                        <label>Frühstück Start:</label>
+                        <input type="time" id="cfgFruehStart" value="08:55">
+                    </div>
+                    <div>
+                        <label>Frühstück Ende:</label>
+                        <input type="time" id="cfgFruehEnd" value="09:30">
+                    </div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <label>AU 1 Start:</label>
+                        <input type="time" id="cfgAu1Start" value="11:00">
+                    </div>
+                    <div>
+                        <label>AU 1 Ende:</label>
+                        <input type="time" id="cfgAu1End" value="11:10">
+                    </div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <label>Mittag Start:</label>
+                        <input type="time" id="cfgMittagStart" value="11:55">
+                    </div>
+                    <div>
+                        <label>Mittag Ende:</label>
+                        <input type="time" id="cfgMittagEnd" value="12:30">
+                    </div>
+                </div>
+
+                <div class="settings-row">
+                    <div>
+                        <label>AU 2 Start:</label>
+                        <input type="time" id="cfgAu2Start" value="14:40">
+                    </div>
+                    <div>
+                        <label>AU 2 Ende:</label>
+                        <input type="time" id="cfgAu2End" value="14:50">
+                    </div>
+                </div>
+
+                <label>Feierabend / Aufräumen Ende:</label>
                 <input type="time" id="cfgEnd" value="16:00">
 
-                <label>Feierabend (Freitag):</label>
-                <input type="time" id="cfgFreitagEnd" value="12:30">
+                <div class="section-title" style="margin: 14px 0 8px 0;">Freitags-Schicht</div>
+                <div class="settings-row">
+                    <div>
+                        <label>Freitag Start:</label>
+                        <input type="time" id="cfgFreitagStart" value="07:30">
+                    </div>
+                    <div>
+                        <label>Freitag Ende:</label>
+                        <input type="time" id="cfgFreitagEnd" value="12:30">
+                    </div>
+                </div>
 
-                <button onclick="saveSettings()" style="margin-top: 14px;">Speichern</button>
-            </div>
-        </div>
-
-        <div class="section" style="margin-bottom: 0;">
-            <div class="section-title">📋 Heutiger Ablauf</div>
-            <div id="scheduleInfo" style="font-size: 13px; color: var(--text-muted); line-height: 1.7;">
-                • 07:30 - 08:55: Arbeit<br>
-                • 08:55 - 09:30: Frühstückspause (35 Min)<br>
-                • 09:30 - 11:00: Arbeit<br>
-                • 11:00 - 11:10: AU (10 Min)<br>
-                • 11:10 - 11:55: Arbeit<br>
-                • 11:55 - 12:30: Mittagspause (35 Min)<br>
-                • 12:30 - 14:40: Arbeit<br>
-                • 14:40 - 14:50: AU (10 Min)<br>
-                • 14:50 - 16:00: Arbeit inkl. Aufräumen (30 Min)
+                <button onclick="saveSettings()" style="margin-top: 16px;">Speichern & Anwenden</button>
             </div>
         </div>
     </div>
@@ -425,7 +475,6 @@
 // --- WETTER API (OPEN-METEO FÜR BARSEL) ---
 async function fetchWeather() {
     try {
-        // Koordinaten für Barßel: 53.2519, 7.8354
         const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=53.2519&longitude=7.8354&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=Europe%2FBerlin');
         const data = await response.json();
         const temp = data.current.temperature_2m;
@@ -454,7 +503,7 @@ async function fetchWeather() {
     }
 }
 fetchWeather();
-setInterval(fetchWeather, 30 * 60 * 1000); // Aktualisiert alle 30 Minuten
+setInterval(fetchWeather, 30 * 60 * 1000);
 
 // --- THEME TOGGLE LOGIK ---
 function setTheme(theme) {
@@ -482,19 +531,48 @@ function toggleTheme() {
 
 (function() {
     const savedTheme = localStorage.getItem('dashboard_theme');
-    if (savedTheme) {
-        setTheme(savedTheme);
-    }
+    if (savedTheme) setTheme(savedTheme);
 })();
 
-// --- TIMER LOGIK ---
+// --- TIMER & EINSTELLUNGEN LOGIK ---
 const REQUIRED_PIN = "1919";
 
-let customSettings = {
+let scheduleConfig = {
     start: "07:30",
+    fruehStart: "08:55",
+    fruehEnd: "09:30",
+    au1Start: "11:00",
+    au1End: "11:10",
+    mittagStart: "11:55",
+    mittagEnd: "12:30",
+    au2Start: "14:40",
+    au2End: "14:50",
     end: "16:00",
+    freitagStart: "07:30",
     freitagEnd: "12:30"
 };
+
+// Einstellungen aus localStorage laden falls vorhanden
+function loadSettings() {
+    const saved = localStorage.getItem('dashboard_schedule_config');
+    if (saved) {
+        try {
+            scheduleConfig = JSON.parse(saved);
+        } catch(e) {}
+    }
+    document.getElementById('cfgStart').value = scheduleConfig.start;
+    document.getElementById('cfgFruehStart').value = scheduleConfig.fruehStart;
+    document.getElementById('cfgFruehEnd').value = scheduleConfig.fruehEnd;
+    document.getElementById('cfgAu1Start').value = scheduleConfig.au1Start;
+    document.getElementById('cfgAu1End').value = scheduleConfig.au1End;
+    document.getElementById('cfgMittagStart').value = scheduleConfig.mittagStart;
+    document.getElementById('cfgMittagEnd').value = scheduleConfig.mittagEnd;
+    document.getElementById('cfgAu2Start').value = scheduleConfig.au2Start;
+    document.getElementById('cfgAu2End').value = scheduleConfig.au2End;
+    document.getElementById('cfgEnd').value = scheduleConfig.end;
+    document.getElementById('cfgFreitagStart').value = scheduleConfig.freitagStart;
+    document.getElementById('cfgFreitagEnd').value = scheduleConfig.freitagEnd;
+}
 
 function toggleSettings() {
     const panel = document.getElementById('settingsPanel');
@@ -502,10 +580,22 @@ function toggleSettings() {
 }
 
 function saveSettings() {
-    customSettings.start = document.getElementById('cfgStart').value;
-    customSettings.end = document.getElementById('cfgEnd').value;
-    customSettings.freitagEnd = document.getElementById('cfgFreitagEnd').value;
+    scheduleConfig.start = document.getElementById('cfgStart').value;
+    scheduleConfig.fruehStart = document.getElementById('cfgFruehStart').value;
+    scheduleConfig.fruehEnd = document.getElementById('cfgFruehEnd').value;
+    scheduleConfig.au1Start = document.getElementById('cfgAu1Start').value;
+    scheduleConfig.au1End = document.getElementById('cfgAu1End').value;
+    scheduleConfig.mittagStart = document.getElementById('cfgMittagStart').value;
+    scheduleConfig.mittagEnd = document.getElementById('cfgMittagEnd').value;
+    scheduleConfig.au2Start = document.getElementById('cfgAu2Start').value;
+    scheduleConfig.au2End = document.getElementById('cfgAu2End').value;
+    scheduleConfig.end = document.getElementById('cfgEnd').value;
+    scheduleConfig.freitagStart = document.getElementById('cfgFreitagStart').value;
+    scheduleConfig.freitagEnd = document.getElementById('cfgFreitagEnd').value;
+
+    localStorage.setItem('dashboard_schedule_config', JSON.stringify(scheduleConfig));
     toggleSettings();
+    showStatus('Zeiten erfolgreich gespeichert!', 'success');
 }
 
 function timeToMinutes(timeStr) {
@@ -534,19 +624,19 @@ function updateTimer() {
 
     if (!isFreitag) {
         schedule = [
-            { name: "Arbeit (1. Block)", start: "07:30", end: "08:55" },
-            { name: "Frühstückspause", start: "08:55", end: "09:30" },
-            { name: "Arbeit (2. Block)", start: "09:30", end: "11:00" },
-            { name: "AU (Kleine Pause)", start: "11:00", end: "11:10" },
-            { name: "Arbeit (3. Block)", start: "11:10", end: "11:55" },
-            { name: "Mittagspause", start: "11:55", end: "12:30" },
-            { name: "Arbeit (4. Block)", start: "12:30", end: "14:40" },
-            { name: "AU (Kleine Pause)", start: "14:40", end: "14:50" },
-            { name: "Arbeit / Aufräumen", start: "14:50", end: "16:00" }
+            { name: "Arbeit (1. Block)", start: scheduleConfig.start, end: scheduleConfig.fruehStart },
+            { name: "Frühstückspause", start: scheduleConfig.fruehStart, end: scheduleConfig.fruehEnd },
+            { name: "Arbeit (2. Block)", start: scheduleConfig.fruehEnd, end: scheduleConfig.au1Start },
+            { name: "AU (Kleine Pause)", start: scheduleConfig.au1Start, end: scheduleConfig.au1End },
+            { name: "Arbeit (3. Block)", start: scheduleConfig.au1End, end: scheduleConfig.mittagStart },
+            { name: "Mittagspause", start: scheduleConfig.mittagStart, end: scheduleConfig.mittagEnd },
+            { name: "Arbeit (4. Block)", start: scheduleConfig.mittagEnd, end: scheduleConfig.au2Start },
+            { name: "AU (Kleine Pause)", start: scheduleConfig.au2Start, end: scheduleConfig.au2End },
+            { name: "Arbeit / Aufräumen", start: scheduleConfig.au2End, end: scheduleConfig.end }
         ];
     } else {
         schedule = [
-            { name: "Freitags-Schicht", start: "07:30", end: "12:30" }
+            { name: "Freitags-Schicht", start: scheduleConfig.freitagStart, end: scheduleConfig.freitagEnd }
         ];
     }
 
@@ -560,10 +650,12 @@ function updateTimer() {
         }
     }
 
+    let workStartM = timeToMinutes(isFreitag ? scheduleConfig.freitagStart : scheduleConfig.start);
+
     if (!activePhase) {
-        if (currentMinutes < timeToMinutes("07:30")) {
+        if (currentMinutes < workStartM) {
             phaseNameEl.innerText = "Vor Arbeitsbeginn";
-            let diffSec = (timeToMinutes("07:30") * 60) - totalCurrentSec;
+            let diffSec = (workStartM * 60) - totalCurrentSec;
             countdownEl.innerText = formatSeconds(diffSec);
         } else {
             phaseNameEl.innerText = "Feierabend 🎉";
@@ -587,6 +679,7 @@ function formatSeconds(totalSec) {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+loadSettings();
 setInterval(updateTimer, 1000);
 updateTimer();
 
