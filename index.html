@@ -552,7 +552,6 @@ let scheduleConfig = {
     freitagEnd: "12:30"
 };
 
-// Einstellungen aus localStorage laden falls vorhanden
 function loadSettings() {
     const saved = localStorage.getItem('dashboard_schedule_config');
     if (saved) {
@@ -763,6 +762,7 @@ async function uploadFuerCode() {
     }
 }
 
+// --- KORRIGIERTE DOWNLOAD-LOGIK FÜR NTFY.SH ---
 async function downloadMitCode() {
     const code4 = document.getElementById('downloadCode').value.trim().toUpperCase();
     if (code4.length !== 4) {
@@ -770,28 +770,62 @@ async function downloadMitCode() {
         return;
     }
     const transferChannel = 'FILE_TRANSFER_4DIGIT_' + code4;
-    showStatus('Download wird gestartet...', 'success');
-    window.location.href = `https://ntfy.sh/${transferChannel}/raw?attachment=1`;
+    showStatus('Suche Datei...', 'loading');
+
+    try {
+        const response = await fetch(`https://ntfy.sh/${transferChannel}/json?poll=1`);
+        if (!response.ok) {
+            throw new Error('Kanal nicht gefunden.');
+        }
+        const text = await response.text();
+        const lines = text.trim().split('\n');
+        let attachmentUrl = null;
+
+        for (const line of lines) {
+            if (!line) continue;
+            try {
+                const msg = JSON.parse(line);
+                if (msg.attachment && msg.attachment.url) {
+                    attachmentUrl = msg.attachment.url;
+                    break;
+                }
+            } catch (err) {}
+        }
+
+        if (attachmentUrl) {
+            showStatus('Datei gefunden! Download wird gestartet...', 'success');
+            window.location.href = attachmentUrl;
+        } else {
+            showStatus('Keine Datei für diesen Code gefunden.', 'error');
+        }
+    } catch (e) {
+        showStatus('Fehler beim Abrufen der Datei.', 'error');
+    }
 }
 
 async function sendeText() {
     const kanal = document.getElementById('kanal').value.trim();
-    const text = document.getElementById('nachricht').value || 'Testnachricht vom Dashboard';
+    const nachricht = document.getElementById('nachricht').value.trim();
 
-    showStatus('Sende Text...', 'loading');
+    if (!kanal || !nachricht) {
+        alert('Bitte Kanal und Nachricht eingeben!');
+        return;
+    }
 
+    showStatus('Sende Nachricht...', 'loading');
     try {
         const response = await fetch(`https://ntfy.sh/${kanal}`, {
             method: 'POST',
-            body: text,
-            headers: { 'Title': 'Dashboard Info' }
+            body: nachricht,
+            headers: { 'Title': 'Control Center Nachricht' }
         });
 
         if (response.ok) {
-            showStatus('Text erfolgreich gesendet!', 'success');
+            showStatus('Nachricht erfolgreich gesendet!', 'success');
+            document.getElementById('nachricht').value = '';
         } else { throw new Error(); }
     } catch (e) {
-        showStatus('Fehler beim Senden!', 'error');
+        showStatus('Fehler beim Senden der Nachricht.', 'error');
     }
 }
 
@@ -799,26 +833,27 @@ async function sendeDateiAnHandy() {
     const kanal = document.getElementById('kanal').value.trim();
     const dateiInput = document.getElementById('dateiHandy');
 
-    if (dateiInput.files.length === 0) {
-        alert('Bitte wähle zuerst eine Datei aus!');
+    if (!kanal || dateiInput.files.length === 0) {
+        alert('Bitte Kanal und Datei auswählen!');
         return;
     }
 
     const file = dateiInput.files[0];
-    showStatus(`Lade "${file.name}" hoch...`, 'loading');
+    showStatus(`Sende "${file.name}" an Handy...`, 'loading');
 
     try {
         const response = await fetch(`https://ntfy.sh/${kanal}`, {
             method: 'PUT',
             body: file,
-            headers: { 'Filename': file.name, 'Title': 'Datei-Übertragung' }
+            headers: { 'Filename': file.name, 'Title': 'Handy Direktversand' }
         });
 
         if (response.ok) {
             showStatus('Datei erfolgreich ans Handy gesendet!', 'success');
+            dateiInput.value = '';
         } else { throw new Error(); }
     } catch (e) {
-        showStatus('Fehler beim Datei-Upload!', 'error');
+        showStatus('Fehler beim Senden der Datei.', 'error');
     }
 }
 </script>
